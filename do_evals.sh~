@@ -1,0 +1,46 @@
+
+subtask_id=$3
+
+echo "eval task" $subtask
+#<Subtask 1>
+if [ "$subtask_id" = "1" ]
+then
+python tools/action_evaluation.py \
+    --action_json_path={PATH_TO_API_CALLS} \
+    --model_output_path={PATH_TO_MODEL_PREDICTIONS} \
+    --single_round_evaluation
+fi
+
+#<Subtask 2 Generation>
+if [ "$subtask_id" = "2" ]
+then
+python tools/response_evaluation.py \
+    --data_json_path={PATH_TO_GOLD_RESPONSES} \
+    --model_response_path={PATH_TO_MODEL_RESPONSES} \
+    --single_round_evaluation
+
+#<Subtask 2 Retrieval>
+python tools/retrieval_evaluation.py \
+    --retrieval_json_path={PATH_TO_GROUNDTRUTH_RETRIEVAL} \
+    --model_score_path={PATH_TO_MODEL_CANDIDATE_SCORES} \
+    --single_round_evaluation
+fi
+
+
+
+#<Subtask 3>
+if [ "$subtask_id" = "3" ]
+then
+(line-by-line evaluation)
+python -m gpt2_dst.scripts.evaluate \
+  --input_path_target={PATH_TO_GROUNDTRUTH_TARGET} \
+  --input_path_predicted={PATH_TO_MODEL_PREDICTIONS} \
+  --output_path_report={PATH_TO_REPORT}
+
+(Or, dialog level evaluation)
+python -m utils.evaluate_dst \
+    --input_path_target={PATH_TO_GROUNDTRUTH_TARGET} \
+    --input_path_predicted={PATH_TO_MODEL_PREDICTIONS} \
+    --output_path_report={PATH_TO_REPORT}
+fi
+
